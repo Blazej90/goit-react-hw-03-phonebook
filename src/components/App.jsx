@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { Component } from 'react';
 import { nanoid } from 'nanoid';
 import ContactForm from './ContactForm';
 import ContactList from './ContactList';
@@ -6,45 +6,51 @@ import Filter from './Filter';
 
 import styles from './App.module.css';
 
-const App = () => {
-  const initialContacts = [
-    { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-    { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-    { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-    { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-  ];
-
-  const [state, setState] = useState({
-    contacts: [...initialContacts],
+class App extends Component {
+  state = {
+    contacts: [],
     filter: '',
     name: '',
     number: '',
-  });
-
-  const handleNameChange = event => {
-    const { name, value } = event.target;
-    setState(prevState => ({ ...prevState, [name]: value }));
   };
 
-  const handleNumberChange = event => {
+  componentDidMount() {
+    const storedContacts = localStorage.getItem('contacts');
+    if (storedContacts) {
+      this.setState({ contacts: JSON.parse(storedContacts) });
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.contacts !== this.state.contacts) {
+      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
+    }
+  }
+
+  handleNameChange = event => {
     const { name, value } = event.target;
-    setState(prevState => ({ ...prevState, [name]: value }));
+    this.setState({ [name]: value });
   };
 
-  const handleAddContact = () => {
-    const isNameExist = state.contacts.some(
-      contact => contact.name.toLowerCase() === state.name.toLowerCase()
+  handleNumberChange = event => {
+    const { name, value } = event.target;
+    this.setState({ [name]: value });
+  };
+
+  handleAddContact = () => {
+    const isNameExist = this.state.contacts.some(
+      contact => contact.name.toLowerCase() === this.state.name.toLowerCase()
     );
 
     if (isNameExist) {
-      alert(`${state.name} is already in contacts!`);
+      alert(`${this.state.name} is already in contacts!`);
     } else {
       const newContact = {
         id: nanoid(),
-        name: state.name,
-        number: state.number,
+        name: this.state.name,
+        number: this.state.number,
       };
-      setState(prevState => ({
+      this.setState(prevState => ({
         contacts: [...prevState.contacts, newContact],
         name: '',
         number: '',
@@ -52,40 +58,45 @@ const App = () => {
     }
   };
 
-  const handleDeleteContact = id => {
-    setState(prevState => ({
+  handleDeleteContact = id => {
+    this.setState(prevState => ({
       contacts: prevState.contacts.filter(contact => contact.id !== id),
       filter: prevState.filter,
     }));
   };
 
-  const handleFilterChange = event => {
+  handleFilterChange = event => {
     const filterValue = event.target.value.toLowerCase();
-    setState(prevState => ({ ...prevState, filter: filterValue }));
+    this.setState({ filter: filterValue });
   };
 
-  const filteredContacts = state.contacts.filter(contact =>
-    contact.name.toLowerCase().includes(state.filter)
-  );
+  render() {
+    const filteredContacts = this.state.contacts.filter(contact =>
+      contact.name.toLowerCase().includes(this.state.filter)
+    );
 
-  return (
-    <div className={styles.appContainer}>
-      <h1 className={styles.pageTitle}>Phonebook</h1>
-      <ContactForm
-        name={state.name}
-        number={state.number}
-        handleNameChange={handleNameChange}
-        handleNumberChange={handleNumberChange}
-        handleAddContact={handleAddContact}
-      />
-      <h2 className={styles.contactsHeading}>Contacts</h2>
-      <Filter filter={state.filter} handleFilterChange={handleFilterChange} />
-      <ContactList
-        contacts={state.filter ? filteredContacts : state.contacts}
-        handleDeleteContact={handleDeleteContact}
-      />
-    </div>
-  );
-};
+    return (
+      <div className={styles.appContainer}>
+        <h1 className={styles.pageTitle}>Phonebook</h1>
+        <ContactForm
+          name={this.state.name}
+          number={this.state.number}
+          handleNameChange={this.handleNameChange}
+          handleNumberChange={this.handleNumberChange}
+          handleAddContact={this.handleAddContact}
+        />
+        <h2 className={styles.contactsHeading}>Contacts</h2>
+        <Filter
+          filter={this.state.filter}
+          handleFilterChange={this.handleFilterChange}
+        />
+        <ContactList
+          contacts={this.state.filter ? filteredContacts : this.state.contacts}
+          handleDeleteContact={this.handleDeleteContact}
+        />
+      </div>
+    );
+  }
+}
 
-export { App };
+export default App;
