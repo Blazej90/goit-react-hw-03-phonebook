@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import styles from './App.module.css';
 
 const ContactForm = ({
@@ -39,6 +40,14 @@ const ContactForm = ({
       </button>
     </div>
   );
+};
+
+ContactForm.propTypes = {
+  name: PropTypes.string.isRequired,
+  number: PropTypes.string.isRequired,
+  handleNameChange: PropTypes.func.isRequired,
+  handleNumberChange: PropTypes.func.isRequired,
+  handleAddContact: PropTypes.func.isRequired,
 };
 
 export default ContactForm;
